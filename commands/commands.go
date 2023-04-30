@@ -9,11 +9,6 @@ func StartMsg(update tgbotapi.Update) tgbotapi.MessageConfig {
 	return tgbotapi.NewMessage(update.Message.Chat.ID, StartMessage)
 }
 
-func Swap(update tgbotapi.Update) tgbotapi.MessageConfig {
-
-	return tgbotapi.NewMessage(update.Message.Chat.ID, SwapMessage)
-}
-
 func Help(update tgbotapi.Update) tgbotapi.MessageConfig {
 	return tgbotapi.NewMessage(update.Message.Chat.ID, HelpMessage)
 }

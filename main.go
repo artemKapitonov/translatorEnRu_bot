@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"translator/commands"
 	"translator/e"
 	"translator/translate"
 
@@ -24,10 +25,20 @@ func main() {
 	updates := bot.GetUpdatesChan(u)
 
 	for update := range updates {
+
 		if update.Message != nil { // If we got a message
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
-			translatedText, err := translate.TranslateRuToEn(update.Message.Text)
+			switch update.Message.Text {
+			case "/start":
+				bot.Send(commands.StartMsg(update))
+				continue
+			case "/help":
+				bot.Send(commands.Help(update))
+				continue
+			}
+
+			translatedText, err := translate.Translate(update.Message.Text)
 			if err != nil {
 				e.Wrap("can't translate message", err)
 			}

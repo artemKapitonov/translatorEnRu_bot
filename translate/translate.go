@@ -7,9 +7,10 @@ import (
 	"net/http"
 	"strings"
 	"translator/e"
+	"unicode"
 )
 
-type Translate struct {
+type TranslateAPI struct {
 	Status string
 	Data   Data
 }
@@ -18,12 +19,30 @@ type Data struct {
 	TranslatedText string
 }
 
-func TranslateRuToEn(text string) (string, error) {
-	trnsl := Translate{}
+func Language(text string) (sourceLang string, targetLang string) {
+	var count float64
+
+	for _, r := range text {
+		if r > unicode.MaxASCII {
+			count += 1
+		}
+	}
+	if count >= float64(len(text))*0.3 {
+		return "ru", "en"
+	}
+
+	return "en", "ru"
+}
+
+func Translate(text string) (string, error) {
+
+	sourceLang, targetLang := Language(text)
+
+	translate := TranslateAPI{}
 
 	url := "https://text-translator2.p.rapidapi.com/translate"
 
-	payload := strings.NewReader(fmt.Sprintf("source_language=ru&target_language=en&text=%s", text))
+	payload := strings.NewReader(fmt.Sprintf("source_language=%s&target_language=%s&text=%s", sourceLang, targetLang, text))
 
 	req, _ := http.NewRequest("POST", url, payload)
 
@@ -34,12 +53,13 @@ func TranslateRuToEn(text string) (string, error) {
 	res, _ := http.DefaultClient.Do(req)
 
 	defer res.Body.Close()
+
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return "", e.Wrap("body can't read", err)
 	}
 
-	if err := json.Unmarshal(body, &trnsl); err != nil {
+	if err := json.Unmarshal(body, &translate); err != nil {
 		return "", e.Wrap("body can't read", err)
 	}
 
@@ -47,7 +67,7 @@ func TranslateRuToEn(text string) (string, error) {
 
 	   	fmt.Println(res)
 	   	fmt.Println(string(body)) */
-	fmt.Println(string(trnsl.Data.TranslatedText))
+	fmt.Println(string(translate.Data.TranslatedText))
 
-	return trnsl.Data.TranslatedText, nil
+	return translate.Data.TranslatedText, nil
 }
